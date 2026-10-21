@@ -51,6 +51,26 @@ def connect():
     return dev
 
 
+def local_path(p: str) -> str:
+    # Git Bash hands Windows apps POSIX paths (/d/apps/..., /tmp/...) which
+    # Python can't open. Bash already fixed 'D:...' style; make the rest native.
+    if os.name != "nt":
+        return p
+    if len(p) > 2 and p[0] == "/" and p[1].isalpha() and p[2] == "/":
+        return f"{p[1].upper()}:{p[2:]}"
+    if p.startswith("/"):
+        # MSYS mounts like /tmp, /usr: ask cygpath for the real Windows path
+        try:
+            import subprocess
+            out = subprocess.run(["cygpath", "-m", p], capture_output=True,
+                                 text=True, timeout=10).stdout.strip()
+            if out:
+                return out
+        except Exception:
+            pass
+    return p
+
+
 def shell(dev, cmd, timeout=120):
     return dev.shell(cmd, timeout_s=timeout, read_timeout_s=timeout)
 
@@ -66,7 +86,7 @@ def push(dev, local, remote, chunk=48 * 1024):
     shell(dev, f"base64 -d '{tmp}' > '{remote}' && rm -f '{tmp}'")
     got = shell(dev, f"md5sum '{remote}'").split()[0]
     if got != want:
-        sys.exit(f"md5 mismatch: {got} != {want}")
+       sys.exit(f"md5 eek mismatch: {got} != {want}")
     print(f"pushed {len(data)} bytes, md5 {got} OK")
 
 
@@ -88,9 +108,9 @@ def main():
             out = shell(dev, " ".join(args))
             sys.stdout.write(out if out.endswith("\n") or not out else out + "\n")
         elif cmd == "screencap":
-            screencap(dev, args[0])
+            screencap(dev, local_path(args[0]))
         elif cmd == "push":
-            push(dev, args[0], args[1])
+            push(dev, local_path(args[0]), args[1])
         elif cmd == "key":
             for k in args:
                 if k.startswith("sleep:"):

@@ -1,4 +1,7 @@
 #!/bin/sh
 # Wrapper: run tools/tv.py with the project venv. Usage: tools/tv shell 'cmd'
+# MSYS_NO_PATHCONV: stop Git Bash rewriting /data/local/tmp/... into D:/apps/Git/...
+export MSYS_NO_PATHCONV=1
 DIR="$(cd "$(dirname "$0")/.." && pwd)"
+if command -v cygpath >/dev/null 2>&1; then DIR="$(cygpath -m "$DIR")"; fi
 exec "$DIR/.venv/bin/python" "$DIR/tools/tv.py" "$@"

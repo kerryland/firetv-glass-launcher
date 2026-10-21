@@ -24,7 +24,8 @@ echo "== Installing"
 
 if [ "$1" != "--no-home" ]; then
   echo "== Setting default home"
-  "$TV" shell "cmd package set-home-activity $PKG/.HomeActivity"
+  # Not present on Fire OS 7 (API 28): the accessibility service below covers it
+  "$TV" shell "cmd package set-home-activity $PKG/.HomeActivity" || true
   # One pm command per shell call: chained pm commands can silently stop after the first.
   # Fire OS 8 refuses this ("protected package"); the accessibility service below covers it.
   if "$TV" shell "pm disable-user --user 0 com.amazon.tv.launcher 2>&1" | grep -q "new state: disabled"; then
