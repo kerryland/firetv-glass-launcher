@@ -58,7 +58,7 @@ public class HomeActivity extends Activity {
     private static final int TOP = 0, DOCK = 1, GRID = 2;
     private static final int COLUMNS = 4;
     static final int MAX_DOCK = 4;
-    private static final int PILL_INPUTS = 0, PILL_WIFI = 1, PILL_SETTINGS = 2;
+    private static final int PILL_INPUTS = 0, PILL_WIFI = 1, PILL_EXIT = 2;
     private static final int NEUTRAL_GLOW = 0xFF8E8E9E;
 
     private View root, page, band, glow, pillRow;
@@ -124,7 +124,7 @@ public class HomeActivity extends Activity {
         inputsMenu = findViewById(R.id.inputsMenu);
         wallpaper = findViewById(R.id.wallpaper);
         pillRow = findViewById(R.id.pills);
-        pills = new View[] {findViewById(R.id.pillInputs), findViewById(R.id.pillWifi), findViewById(R.id.pillSettings)};
+        pills = new View[] {findViewById(R.id.pillInputs), findViewById(R.id.pillWifi), findViewById(R.id.pillExit)};
 
         greeting.setTypeface(Fonts.outfit(this, 300));
         ((TextClock) findViewById(R.id.clock)).setTypeface(Fonts.outfit(this, 120));
@@ -176,6 +176,7 @@ public class HomeActivity extends Activity {
     protected void onStart() {
         super.onStart();
         stopped = false;
+        HomeRedirect.resume(this); // Glass is on screen: Home goes back to Glass again
         IntentFilter timeFilter = new IntentFilter(Intent.ACTION_TIME_TICK);
         timeFilter.addAction(Intent.ACTION_TIME_CHANGED);
         timeFilter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
@@ -399,10 +400,29 @@ public class HomeActivity extends Activity {
         if (zone == TOP) {
             if (topIdx == PILL_INPUTS) openMenu();
             else if (topIdx == PILL_WIFI) launch(new Intent(Settings.ACTION_WIFI_SETTINGS));
-            else launch(new Intent(Settings.ACTION_SETTINGS));
+            else exitToAmazon();
         } else {
             AppInfo app = focusedApp();
             if (app != null) launch(app.launchIntent);
+        }
+    }
+
+    /**
+     * Hand the screen back to Amazon's own UI. The Home redirect is paused (until
+     * Glass is shown again, or the device reboots) so it doesn't immediately bounce
+     * back to Glass.
+     */
+    private void exitToAmazon() {
+        HomeRedirect.suspend(this);
+        Toast.makeText(this, "Open Glass from Recents or your apps to come back", Toast.LENGTH_LONG).show();
+        Intent home = new Intent(Intent.ACTION_MAIN)
+                .addCategory(Intent.CATEGORY_HOME)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        try {
+            // Leave the task alive (don't finish) so Glass stays in Recents / Your Apps
+            startActivity(home);
+        } catch (ActivityNotFoundException e) {
+            HomeRedirect.resume(this); // nothing to exit to; stay put
         }
     }
 

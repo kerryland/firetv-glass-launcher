@@ -51,6 +51,10 @@ public class HomeButtonService extends AccessibilityService {
     public void onAccessibilityEvent(AccessibilityEvent event) {
         if (event.getEventType() != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return;
         if (AMAZON_LAUNCHER.contentEquals(event.getPackageName())) {
+            if (HomeRedirect.suspended(this)) {
+                removeShade(); // user chose Exit: leave Amazon's UI alone
+                return;
+            }
             showShade();
             openGlass();
         } else if (getPackageName().contentEquals(event.getPackageName())) {

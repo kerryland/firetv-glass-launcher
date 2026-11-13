@@ -84,7 +84,9 @@ list. Updates can still arrive, and a Fire OS update may switch things back on. 
 
 [![Glass app grid](docs/grid.png)](docs/grid.png)
 
-- **Top bar:** clock, greeting, Inputs, Wi-Fi and Settings.
+- **Top bar:** clock, greeting, Inputs, Wi-Fi and Exit.
+- **Exit** hands the TV back to Amazon's own UI for a while. Glass stays in the
+  **Recent / Your Apps** row so you can reopen it, and always comes back after a reboot.
 - **Dock:** your four favourite apps. The big title and the background glow follow the focused app.
 - **Grid:** every other app, alphabetical, 4 columns. Press Down from the dock.
 - **D-pad:** Up and Down always move exactly one row, and the ends of a row never jump elsewhere.
